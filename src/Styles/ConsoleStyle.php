@@ -57,11 +57,6 @@ class ConsoleStyle extends Style
         'access'   => Color::GRAY
     ];
 
-    public function __construct($stream = STDOUT)
-    {
-
-    }
-
     public function apply($element, string $type, string $context = ''): string
     {
         if (!empty($style = $this->getStyle($type, $context))) {
@@ -102,103 +97,36 @@ class ConsoleStyle extends Style
     /**
      * Returns true if the stream supports colorization.
      *
-     * Colorization is disabled if not supported by the stream:
-     *
-     *  -  Windows without Ansicon, ConEmu or Babun
-     *  -  non tty consoles
-     *
-     * @return bool true if the stream supports colorization, false otherwise
-     *
      * @link https://github.com/symfony/Console/blob/master/Output/StreamOutput.php#L94
      * @codeCoverageIgnore
-     */
-    public function isSupported(): bool
-    {
-        if ('Hyper' === getenv('TERM_PROGRAM')) {
-            return true;
-        }
-        if (\DIRECTORY_SEPARATOR === '\\') {
-            return (\function_exists('sapi_windows_vt100_support')
-                    && @sapi_windows_vt100_support($this->stream))
-                || false !== getenv('ANSICON')
-                || 'ON' === getenv('ConEmuANSI')
-                || 'xterm' === getenv('TERM');
-        }
-        if (\function_exists('stream_isatty')) {
-            return @stream_isatty($this->stream);
-        }
-        if (\function_exists('posix_isatty')) {
-            return @posix_isatty($this->stream);
-        }
-
-        $stat = @fstat($this->stream);
-
-        // Check if formatted mode is S_IFCHR
-        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
-    }
-
-    /**
-     * Returns true if the stream supports colorization.
-     *
-     * Reference: Composer\XdebugHandler\Process::supportsColor
-     * https://github.com/composer/xdebug-handler
-     *
-     * @param mixed $stream A CLI output stream
-     *
      * @return bool
      */
-    private function hasColorSupport($stream)
+    private function isSupported(): bool
     {
-        if (!\is_resource($stream) || 'stream' !== get_resource_type($stream)) {
-            return false;
-        }
-
         if ('Hyper' === getenv('TERM_PROGRAM')) {
             return true;
         }
 
         if (\DIRECTORY_SEPARATOR === '\\') {
-            return (\function_exists('sapi_windows_vt100_support')
-                    && @sapi_windows_vt100_support($stream))
-                || false !== getenv('ANSICON')
-                || 'ON' === getenv('ConEmuANSI')
-                || 'xterm' === getenv('TERM');
+            return (
+                    \function_exists('sapi_windows_vt100_support')
+                    && @sapi_windows_vt100_support(STDOUT)
+                )
+                || getenv('ANSICON') !== false
+                || getenv('ConEmuANSI') == 'ON'
+                || getenv('TERM') == 'xterm';
         }
         if (\function_exists('stream_isatty')) {
-            return @stream_isatty($stream);
+            return @stream_isatty(STDOUT);
         }
+
         if (\function_exists('posix_isatty')) {
-            return @posix_isatty($stream);
+            return @posix_isatty(STDOUT);
         }
-        $stat = @fstat($stream);
+
+        $stat = @fstat(STDOUT);
+
         // Check if formatted mode is S_IFCHR
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
-    }
-
-    /**
-     * Returns true if the Windows terminal supports true color.
-     *
-     * Note that this does not check an output stream, but relies on environment
-     * variables from known implementations, or a PHP and Windows version that
-     * supports true color.
-     *
-     * @return bool
-     */
-    private function isWindowsTrueColor()
-    {
-        $result = 183 <= getenv('ANSICON_VER')
-            || 'ON' === getenv('ConEmuANSI')
-            || 'xterm' === getenv('TERM')
-            || 'Hyper' === getenv('TERM_PROGRAM');
-        if (!$result && \PHP_VERSION_ID >= 70200) {
-            $version = sprintf(
-                '%s.%s.%s',
-                PHP_WINDOWS_VERSION_MAJOR,
-                PHP_WINDOWS_VERSION_MINOR,
-                PHP_WINDOWS_VERSION_BUILD
-            );
-            $result = $version >= '10.0.15063';
-        }
-        return $result;
     }
 }
