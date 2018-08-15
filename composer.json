@@ -1,0 +1,26 @@
+{
+  "name": "spiral/debug",
+  "type": "library",
+  "description": "Configurable dumper with support for multiple styles, html and CLI dumps.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Wolfy-J",
+      "email": "wolfy.jd@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "ext-mbstring": "*",
+    "psr/log": "^1.0",
+    "codedungeon/php-cli-colors": "~1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Spiral\\Debug\\": "src/"
+    }
+  }
+}
