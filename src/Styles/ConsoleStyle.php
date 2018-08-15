@@ -16,8 +16,6 @@ use Spiral\Debug\Style;
  */
 class ConsoleStyle extends Style
 {
-    private $stream;
-
     /**
      * Every dumped element is wrapped using this pattern.
      *
