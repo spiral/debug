@@ -45,6 +45,15 @@ class DumperTest extends TestCase
         $this->assertContains('hello world', $result);
     }
 
+    public function testResource()
+    {
+        $d = $this->makeDumper();
+        $result = $d->dump(STDOUT, Dumper::RETURN);
+
+        $this->assertContains('resource', $result);
+    }
+
+
     public function testHTML()
     {
         $d = $this->makeDumper();
@@ -211,7 +220,6 @@ class DumperTest extends TestCase
         $this->assertNotContains('invisible', $result);
         $this->assertNotContains('_ok_', $result);
     }
-
 
     public function testConsoleRenderer()
     {
