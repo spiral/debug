@@ -31,6 +31,9 @@ class BenchmarkTest extends TestCase
 
         $this->assertCount(1, $b->getRecords());
         $this->assertSame($r, $b->getRecords()[0]);
+
+        $b->reset();
+        $this->assertCount(0, $b->getRecords());
     }
 
     public function testComplete()
