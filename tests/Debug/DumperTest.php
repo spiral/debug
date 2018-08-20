@@ -191,6 +191,8 @@ class DumperTest extends TestCase
 
         $result = $d->dump(new class
         {
+            protected static $static = "yes";
+
             private $value = 123;
             protected $visible = '_kk_';
 
