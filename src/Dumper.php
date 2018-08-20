@@ -11,165 +11,200 @@ namespace Spiral\Debug;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use Spiral\Debug\Styles\DefaultStyle;
+use Spiral\Debug\Exceptions\DumperException;
+use Spiral\Debug\Renderer\ConsoleRenderer;
+use Spiral\Debug\Renderer\HtmlRenderer;
+use Spiral\Debug\Renderer\PlainRenderer;
 
 /**
- * Styles exports the content of the given variable, array or object into human friendly form.
+ * Renderer exports the content of the given variable, array or object into human friendly form.
  */
 class Dumper implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /**
-     * Options for dump() function to specify output.
+     * Directives for dump output forwarding.
      */
-    const OUTPUT_ECHO = 0;
-    const OUTPUT_RETURN = 1;
-    const OUTPUT_LOG = 2;
+    const OUTPUT = 0;
+    const RETURN = 1;
+    const LOGGER = 2;
+    const ERROR_LOG = 3;
+    const OUTPUT_CLI = 4;
+    const OUTPUT_CLI_COLORS = 5;
 
-    /**
-     * Deepest level to be dumped.
-     *
-     * @var int
-     */
+    /** @var int */
     private $maxLevel = 10;
 
     /**
-     * @invisible
+     * Default render associations.
      *
-     * @var Style
+     * @var array|RendererInterface[]
      */
-    private $style = null;
-
-    public $xxx = [
-        'asdas'  => 123213,
-        "asdasd" => 'test'
+    private $targets = [
+        self::OUTPUT            => HtmlRenderer::class,
+        self::OUTPUT_CLI        => PlainRenderer::class,
+        self::OUTPUT_CLI_COLORS => ConsoleRenderer::class,
+        self::RETURN            => HtmlRenderer::class,
+        self::LOGGER            => PlainRenderer::class,
+        self::ERROR_LOG         => PlainRenderer::class,
     ];
 
     /**
-     * @param int             $maxLevel Defines how deep dumper should go while dumping the arrays or objects.
-     * @param Style           $style    Light styler to be used by default.
      * @param LoggerInterface $logger
      */
-    public function __construct(int $maxLevel = 10, Style $style = null, LoggerInterface $logger = null)
+    public function __construct(LoggerInterface $logger = null)
     {
-        $this->maxLevel = $maxLevel;
-        $this->style = $style ?? new DefaultStyle();
-
         if (!empty($logger)) {
             $this->setLogger($logger);
         }
     }
 
     /**
-     * Set dump styler.
+     * Set max nesting level for value dumping.
      *
-     * @param Style $style
-     * @return self
+     * @param int $maxLevel
      */
-    public function setStyle(Style $style): Dumper
+    public function setMaxLevel(int $maxLevel)
     {
-        $this->style = $style;
+        $this->maxLevel = min($maxLevel, 1);
+    }
+
+    /**
+     * Dump given value into target output.
+     *
+     * @param mixed $value
+     * @param int   $target Possible options: OUTPUT, RETURN, ERROR_LOG, LOGGER.
+     * @return string
+     * @throws DumperException
+     */
+    public function dump($value, int $target = self::OUTPUT): ?string
+    {
+        $r = $this->getRenderer($target);
+        $dump = $r->wrapContent($this->renderValue($r, $value));
+
+        switch ($target) {
+            case self::OUTPUT:
+                echo $dump;
+                break;
+
+            case self::RETURN:
+                return $dump;
+
+            case self::LOGGER:
+                if ($this->logger == null) {
+                    throw new DumperException("Unable to dump value to log, no associated LoggerInterface");
+                }
+                $this->logger->debug($dump);
+                break;
+
+            case self::ERROR_LOG:
+                error_log($dump, 0);
+                break;
+        }
+
+        return null;
+    }
+
+    /**
+     * Associate rendered with given output target.
+     *
+     * @param int               $target
+     * @param RendererInterface $renderer
+     * @return Dumper
+     * @throws DumperException
+     */
+    public function setRenderer(int $target, RendererInterface $renderer): Dumper
+    {
+        if (!isset($this->targets[$target])) {
+            throw new DumperException(sprintf("Undefined dump target %d", $target));
+        }
+
+        $this->targets[$target] = $renderer;
 
         return $this;
     }
 
     /**
-     * Return new copy of dumper with given style.
+     * Returns renderer instance associated with given output target. Automatically detects CLI mode, RR mode and
+     * colorization support.
      *
-     * @param Style $style
-     * @return self
+     * @param int $target
+     * @return RendererInterface
+     * @throws DumperException
      */
-    public function withStyle(Style $style): Dumper
+    private function getRenderer(int $target): RendererInterface
     {
-        $dumper = clone $this;
-        $dumper->style = $style;
-
-        return $dumper;
-    }
-
-    /**
-     * Dump specified value. Styles will automatically detect CLI mode in OUTPUT_ECHO mode.
-     *
-     * @param mixed $value
-     * @param int   $output
-     *
-     * @return string
-     */
-    public function dump($value, int $output = self::OUTPUT_ECHO): string
-    {
-        //todo: cleanup
-        switch ($output) {
-            case self::OUTPUT_ECHO:
-                echo $this->style->wrapBody($this->dumpValue($value, '', 0));
-                break;
-
-            case self::OUTPUT_LOG:
-                if (!empty($this->logger)) {
-                    $this->logger->debug($this->dump($value, self::OUTPUT_RETURN));
-                }
-                break;
-
-            case self::OUTPUT_RETURN:
-                return $this->style->wrapBody($this->dumpValue($value, '', 0));
+        if ($target == self::OUTPUT && $this->isCLI()) {
+            if ($this->isColorsSupported()) {
+                $target = self::OUTPUT_CLI_COLORS;
+            } else {
+                $target = self::OUTPUT_CLI;
+            }
         }
 
-        //Nothing to return
-        return '';
+        if (!isset($this->targets[$target])) {
+            throw new DumperException(sprintf("Undefined dump target %d", $target));
+        }
+
+        if (is_string($this->targets[$target])) {
+            $this->targets[$target] = new $this->targets[$target]();
+        }
+
+        return $this->targets[$target];
     }
 
     /**
      * Variable dumper. This is the oldest spiral function originally written in 2007. :).
      *
-     * @param mixed  $value
-     * @param string $name       Variable name, internal.
-     * @param int    $level      Dumping level, internal.
-     * @param bool   $hideHeader Hide array/object header, internal.
+     * @param RendererInterface $r          Render to style value content.
+     * @param mixed             $value
+     * @param string            $name       Variable name, internal.
+     * @param int               $level      Dumping level, internal.
+     * @param bool              $hideHeader Hide array/object header, internal.
      *
      * @return string
      */
-    private function dumpValue($value, string $name = '', int $level = 0, bool $hideHeader = false): string
-    {
-        //Any dump starts with initial indent (level based)
-        $indent = $this->style->indent($level);
-
+    private function renderValue(
+        RendererInterface $r,
+        $value,
+        string $name = '',
+        int $level = 0,
+        bool $hideHeader = false
+    ): string {
         if (!$hideHeader && !empty($name)) {
-            //Showing element name (if any provided)
-            $header = $indent . $this->style->apply($name, 'name');
-
-            //Showing equal sing
-            $header .= $this->style->apply(' = ', 'syntax', '=');
+            $header = $r->indent($level) . $r->apply($name, 'name') . $r->apply(' = ', 'syntax', '=');
         } else {
-            $header = $indent;
+            $header = $r->indent($level);
         }
 
         if ($level > $this->maxLevel) {
-            //Styles is not reference based, we can't dump too deep values
-            return $indent . $this->style->apply('-too deep-', 'maxLevel') . "\n";
+            //Renderer is not reference based, we can't dump too deep values
+            return $r->indent($level) . $r->apply('-too deep-', 'maxLevel') . "\n";
         }
 
         $type = strtolower(gettype($value));
 
         if ($type == 'array') {
-            return $header . $this->dumpArray($value, $level, $hideHeader);
+            return $header . $this->renderArray($r, $value, $level, $hideHeader);
         }
 
         if ($type == 'object') {
-            return $header . $this->dumpObject($value, $level, $hideHeader);
+            return $header . $this->renderObject($r, $value, $level, $hideHeader);
         }
 
         if ($type == 'resource') {
             //No need to dump resource value
             $element = get_resource_type($value) . ' resource ';
 
-            return $header . $this->style->apply($element, 'type', 'resource') . "\n";
+            return $header . $r->apply($element, 'type', 'resource') . "\n";
         }
 
         //Value length
         $length = strlen($value);
 
         //Including type size
-        $header .= $this->style->apply("{$type}({$length})", 'type', $type);
+        $header .= $r->apply("{$type}({$length})", 'type', $type);
 
         $element = null;
         switch ($type) {
@@ -189,26 +224,25 @@ class Dumper implements LoggerAwareInterface
         }
 
         //Including value
-        return $header . ' ' . $this->style->apply($element, 'value', $type) . "\n";
+        return $header . ' ' . $r->apply($element, 'value', $type) . "\n";
     }
 
     /**
-     * @param array $array
-     * @param int   $level
-     * @param bool  $hideHeader
+     * @param RendererInterface $r
+     * @param array             $array
+     * @param int               $level
+     * @param bool              $hideHeader
      *
      * @return string
      */
-    private function dumpArray(array $array, int $level, bool $hideHeader = false): string
+    private function renderArray(RendererInterface $r, array $array, int $level, bool $hideHeader = false): string
     {
-        $indent = $this->style->indent($level);
-
         if (!$hideHeader) {
             $count = count($array);
 
             //Array size and scope
-            $output = $this->style->apply("array({$count})", 'type', 'array') . "\n";
-            $output .= $indent . $this->style->apply('[', 'syntax', '[') . "\n";
+            $output = $r->apply("array({$count})", 'type', 'array') . "\n";
+            $output .= $r->indent($level) . $r->apply('[', 'syntax', '[') . "\n";
         } else {
             $output = '';
         }
@@ -222,34 +256,38 @@ class Dumper implements LoggerAwareInterface
                 $key = "'{$key}'";
             }
 
-            $output .= $this->dumpValue($value, "[{$key}]", $level + 1);
+            $output .= $this->renderValue($r, $value, "[{$key}]", $level + 1);
         }
 
         if (!$hideHeader) {
             //Closing array scope
-            $output .= $indent . $this->style->apply(']', 'syntax', ']') . "\n";
+            $output .= $r->indent($level) . $r->apply(']', 'syntax', ']') . "\n";
         }
 
         return $output;
     }
 
     /**
-     * @param object $o
-     * @param int    $level
-     * @param bool   $hideHeader
-     * @param string $class
+     * @param RendererInterface $r
+     * @param object            $o
+     * @param int               $level
+     * @param bool              $hideHeader
+     * @param string            $class
      *
      * @return string
      */
-    private function dumpObject(object $o, int $level, bool $hideHeader = false, string $class = ''): string
-    {
-        $indent = $this->style->indent($level);
-
+    private function renderObject(
+        RendererInterface $r,
+        object $o,
+        int $level,
+        bool $hideHeader = false,
+        string $class = ''
+    ): string {
         if (!$hideHeader) {
             $type = ($class ?: get_class($o)) . ' object ';
 
-            $header = $this->style->apply($type, 'type', 'object') . "\n";
-            $header .= $indent . $this->style->apply('(', 'syntax', '(') . "\n";
+            $header = $r->apply($type, 'type', 'object') . "\n";
+            $header .= $r->indent($level) . $r->apply('(', 'syntax', '(') . "\n";
         } else {
             $header = '';
         }
@@ -269,33 +307,34 @@ class Dumper implements LoggerAwareInterface
 
             if (is_object($debugInfo)) {
                 //We are not including syntax elements here
-                return $this->dumpObject($debugInfo, $level, false, get_class($o));
+                return $this->renderObject($r, $debugInfo, $level, false, get_class($o));
             }
 
             return $header
-                . $this->dumpValue($debugInfo, '', $level + (is_scalar($o)), true)
-                . $indent . $this->style->apply(')', 'syntax', ')') . "\n";
+                . $this->renderValue($r, $debugInfo, '', $level + (is_scalar($o)), true)
+                . $r->indent($level) . $r->apply(')', 'syntax', ')') . "\n";
         }
 
         $refection = new \ReflectionObject($o);
 
         $output = '';
         foreach ($refection->getProperties() as $property) {
-            $output .= $this->dumpProperty($o, $property, $level);
+            $output .= $this->renderProperty($r, $o, $property, $level);
         }
 
         //Header, content, footer
-        return $header . $output . $indent . $this->style->apply(')', 'syntax', ')') . "\n";
+        return $header . $output . $r->indent($level) . $r->apply(')', 'syntax', ')') . "\n";
     }
 
     /**
+     * @param RendererInterface   $r
      * @param object              $o
      * @param \ReflectionProperty $p
      * @param int                 $level
      *
      * @return string
      */
-    private function dumpProperty(object $o, \ReflectionProperty $p, int $level): string
+    private function renderProperty(RendererInterface $r, object $o, \ReflectionProperty $p, int $level): string
     {
         if ($p->isStatic()) {
             return '';
@@ -317,13 +356,13 @@ class Dumper implements LoggerAwareInterface
         $p->setAccessible(true);
 
         if ($o instanceof \stdClass) {
-            $name = $this->style->apply($p->getName(), 'dynamic');
+            $name = $r->apply($p->getName(), 'dynamic');
         } else {
             //Property name includes access level
-            $name = $p->getName() . $this->style->apply(':' . $access, 'access', $access);
+            $name = $p->getName() . $r->apply(':' . $access, 'access', $access);
         }
 
-        return $this->dumpValue($p->getValue($o), $name, $level + 1);
+        return $this->renderValue($r, $p->getValue($o), $name, $level + 1);
     }
 
     /**
@@ -363,5 +402,61 @@ class Dumper implements LoggerAwareInterface
         }
 
         return 'public';
+    }
+
+    /**
+     * Return true if PHP running in CLI mode.
+     *
+     * @codeCoverageIgnore
+     * @return bool
+     */
+    private function isCLI(): bool
+    {
+        if (!empty(getenv('RR'))) {
+            // Do not treat RoadRunner as CLI.
+            return false;
+        }
+
+        if (php_sapi_name() === 'cli') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the STDOUT supports colorization.
+     *
+     * @codeCoverageIgnore
+     * @link https://github.com/symfony/Console/blob/master/Output/StreamOutput.php#L94
+     * @return bool
+     */
+    private function isColorsSupported(): bool
+    {
+        if ('Hyper' === getenv('TERM_PROGRAM')) {
+            return true;
+        }
+
+        if (\DIRECTORY_SEPARATOR === '\\') {
+            return (
+                    \function_exists('sapi_windows_vt100_support')
+                    && @sapi_windows_vt100_support(STDOUT)
+                )
+                || getenv('ANSICON') !== false
+                || getenv('ConEmuANSI') == 'ON'
+                || getenv('TERM') == 'xterm';
+        }
+        if (\function_exists('stream_isatty')) {
+            return @stream_isatty(STDOUT);
+        }
+
+        if (\function_exists('posix_isatty')) {
+            return @posix_isatty(STDOUT);
+        }
+
+        $stat = @fstat(STDOUT);
+
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 }

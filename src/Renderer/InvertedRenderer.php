@@ -6,12 +6,12 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Debug\Styles;
+namespace Spiral\Debug\Renderer;
 
 /**
  * Dark version of default html dump style.
  */
-class InvertedStyle extends DefaultStyle
+class InvertedRenderer extends HtmlRenderer
 {
     /**
      * Container element used to inject dump into, usually pre elemnt with some styling.

@@ -6,9 +6,9 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Debug;
+namespace Spiral\Debug\Exceptions;
 
-interface LogsInterface
+class DumperException extends \LogicException
 {
 
 }

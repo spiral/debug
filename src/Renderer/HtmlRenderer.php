@@ -6,14 +6,12 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Debug\Styles;
-
-use Spiral\Debug\Style;
+namespace Spiral\Debug\Renderer;
 
 /**
  * Default html style dumper.
  */
-class DefaultStyle extends Style
+class HtmlRenderer extends AbstractRenderer
 {
     /**
      * Container element used to inject dump into, usually pre elemnt with some styling.
@@ -75,13 +73,7 @@ class DefaultStyle extends Style
     ];
 
     /**
-     * Stylize content using pre-defined style.
-     *
-     * @param string|null $element
-     * @param string      $type
-     * @param string      $context
-     *
-     * @return string
+     * @inheritdoc
      */
     public function apply($element, string $type, string $context = ''): string
     {

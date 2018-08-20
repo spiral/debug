@@ -9,9 +9,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         stopOnError="false"
-         syntaxCheck="true"
->
+         stopOnError="false">
     <testsuites>
         <testsuite name="Spiral Framework: Debug component tests">
             <directory>./tests/</directory>

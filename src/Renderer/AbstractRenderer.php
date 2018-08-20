@@ -6,9 +6,11 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Debug;
+namespace Spiral\Debug\Renderer;
 
-abstract class Style
+use Spiral\Debug\RendererInterface;
+
+abstract class AbstractRenderer implements RendererInterface
 {
     /**
      * Container element used to inject dump into, usually pre elemnt with some styling.
@@ -25,22 +27,15 @@ abstract class Style
     protected $indent = '    ';
 
     /**
-     * Inject dumped value into dump container.
-     *
-     * @param string $body
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function wrapBody(string $body): string
+    public function wrapContent(string $body): string
     {
         return $this->interpolate($this->body, compact('body'));
     }
 
     /**
-     * Set indent to line based on it's level.
-     *
-     * @param int $level
-     * @return string
+     * @inheritdoc
      */
     public function indent(int $level): string
     {
@@ -50,16 +45,6 @@ abstract class Style
 
         return $this->apply(str_repeat($this->indent, $level), 'indent');
     }
-
-    /**
-     * Stylize content using pre-defined style.
-     *
-     * @param string|null $element
-     * @param string      $type
-     * @param string      $context
-     * @return string
-     */
-    abstract public function apply($element, string $type, string $context = ''): string;
 
     /**
      * Replaces {placeholders} with given values.

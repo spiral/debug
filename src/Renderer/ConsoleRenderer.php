@@ -6,15 +6,14 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Debug\Styles;
+namespace Spiral\Debug\Renderer;
 
 use Codedungeon\PHPCliColors\Color;
-use Spiral\Debug\Style;
 
 /**
  * Colorful styling for CLI dumps.
  */
-class ConsoleStyle extends Style
+class ConsoleRenderer extends AbstractRenderer
 {
     /**
      * Every dumped element is wrapped using this pattern.
@@ -55,6 +54,9 @@ class ConsoleStyle extends Style
         'access'   => Color::GRAY
     ];
 
+    /**
+     * @inheritdoc
+     */
     public function apply($element, string $type, string $context = ''): string
     {
         if (!empty($style = $this->getStyle($type, $context))) {
@@ -90,41 +92,5 @@ class ConsoleStyle extends Style
         }
 
         return $this->styles['common'];
-    }
-
-    /**
-     * Returns true if the stream supports colorization.
-     *
-     * @link https://github.com/symfony/Console/blob/master/Output/StreamOutput.php#L94
-     * @codeCoverageIgnore
-     * @return bool
-     */
-    private function isSupported(): bool
-    {
-        if ('Hyper' === getenv('TERM_PROGRAM')) {
-            return true;
-        }
-
-        if (\DIRECTORY_SEPARATOR === '\\') {
-            return (
-                    \function_exists('sapi_windows_vt100_support')
-                    && @sapi_windows_vt100_support(STDOUT)
-                )
-                || getenv('ANSICON') !== false
-                || getenv('ConEmuANSI') == 'ON'
-                || getenv('TERM') == 'xterm';
-        }
-        if (\function_exists('stream_isatty')) {
-            return @stream_isatty(STDOUT);
-        }
-
-        if (\function_exists('posix_isatty')) {
-            return @posix_isatty(STDOUT);
-        }
-
-        $stat = @fstat(STDOUT);
-
-        // Check if formatted mode is S_IFCHR
-        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 }
