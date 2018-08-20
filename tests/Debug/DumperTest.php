@@ -11,6 +11,7 @@ namespace Spiral\Debug\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Spiral\Debug\Dumper;
+use Spiral\Debug\Renderer\ConsoleRenderer;
 use Spiral\Debug\Renderer\HtmlRenderer;
 use Spiral\Debug\Renderer\InvertedRenderer;
 use Spiral\Debug\Renderer\PlainRenderer;
@@ -192,6 +193,30 @@ class DumperTest extends TestCase
     {
         $d = $this->makeDumper();
         $d->setRenderer(Dumper::RETURN, new InvertedRenderer());
+        $d->setMaxLevel(5);
+
+        $result = $d->dump(new class
+        {
+            private $value = 123;
+            protected $visible = '_kk_';
+            public $data = ['name' => 'value'];
+
+            /** @invisible */
+            protected $invisible = '_ok_';
+        }, Dumper::RETURN);
+
+        $this->assertContains('visible', $result);
+        $this->assertContains('_kk_', $result);
+
+        $this->assertNotContains('invisible', $result);
+        $this->assertNotContains('_ok_', $result);
+    }
+
+
+    public function testConsoleRenderer()
+    {
+        $d = $this->makeDumper();
+        $d->setRenderer(Dumper::RETURN, new ConsoleRenderer());
         $d->setMaxLevel(5);
 
         $result = $d->dump(new class
