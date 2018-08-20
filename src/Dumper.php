@@ -269,7 +269,7 @@ class Dumper implements LoggerAwareInterface
 
     /**
      * @param RendererInterface $r
-     * @param object            $o
+     * @param object            $value
      * @param int               $level
      * @param bool              $hideHeader
      * @param string            $class
@@ -278,13 +278,13 @@ class Dumper implements LoggerAwareInterface
      */
     private function renderObject(
         RendererInterface $r,
-        object $o,
+        $value,
         int $level,
         bool $hideHeader = false,
         string $class = ''
     ): string {
         if (!$hideHeader) {
-            $type = ($class ?: get_class($o)) . ' object ';
+            $type = ($class ?: get_class($value)) . ' object ';
 
             $header = $r->apply($type, 'type', 'object') . "\n";
             $header .= $r->indent($level) . $r->apply('(', 'syntax', '(') . "\n";
@@ -293,11 +293,11 @@ class Dumper implements LoggerAwareInterface
         }
 
         //Let's use method specifically created for dumping
-        if (method_exists($o, '__debugInfo') || $o instanceof \Closure) {
-            if ($o instanceof \Closure) {
-                $debugInfo = $this->describeClosure($o);
+        if (method_exists($value, '__debugInfo') || $value instanceof \Closure) {
+            if ($value instanceof \Closure) {
+                $debugInfo = $this->describeClosure($value);
             } else {
-                $debugInfo = $o->__debugInfo();
+                $debugInfo = $value->__debugInfo();
             }
 
             if (is_array($debugInfo)) {
@@ -307,19 +307,19 @@ class Dumper implements LoggerAwareInterface
 
             if (is_object($debugInfo)) {
                 //We are not including syntax elements here
-                return $this->renderObject($r, $debugInfo, $level, false, get_class($o));
+                return $this->renderObject($r, $debugInfo, $level, false, get_class($value));
             }
 
             return $header
-                . $this->renderValue($r, $debugInfo, '', $level + (is_scalar($o)), true)
+                . $this->renderValue($r, $debugInfo, '', $level + (is_scalar($value)), true)
                 . $r->indent($level) . $r->apply(')', 'syntax', ')') . "\n";
         }
 
-        $refection = new \ReflectionObject($o);
+        $refection = new \ReflectionObject($value);
 
         $output = '';
         foreach ($refection->getProperties() as $property) {
-            $output .= $this->renderProperty($r, $o, $property, $level);
+            $output .= $this->renderProperty($r, $value, $property, $level);
         }
 
         //Header, content, footer
@@ -328,20 +328,20 @@ class Dumper implements LoggerAwareInterface
 
     /**
      * @param RendererInterface   $r
-     * @param object              $o
+     * @param object              $value
      * @param \ReflectionProperty $p
      * @param int                 $level
      *
      * @return string
      */
-    private function renderProperty(RendererInterface $r, object $o, \ReflectionProperty $p, int $level): string
+    private function renderProperty(RendererInterface $r, $value, \ReflectionProperty $p, int $level): string
     {
         if ($p->isStatic()) {
             return '';
         }
 
         if (
-            !($o instanceof \stdClass)
+            !($value instanceof \stdClass)
             && strpos($p->getDocComment(), '@invisible') !== false
         ) {
             //Memory loop while reading doc comment for stdClass variables?
@@ -355,14 +355,14 @@ class Dumper implements LoggerAwareInterface
         //To read private and protected properties
         $p->setAccessible(true);
 
-        if ($o instanceof \stdClass) {
+        if ($value instanceof \stdClass) {
             $name = $r->apply($p->getName(), 'dynamic');
         } else {
             //Property name includes access level
             $name = $p->getName() . $r->apply(':' . $access, 'access', $access);
         }
 
-        return $this->renderValue($r, $p->getValue($o), $name, $level + 1);
+        return $this->renderValue($r, $p->getValue($value), $name, $level + 1);
     }
 
     /**
