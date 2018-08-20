@@ -11,11 +11,9 @@ namespace Spiral\Debug\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Spiral\Debug\Dumper;
-use Spiral\Debug\Renderer\HtmlRenderer;
-use Spiral\Debug\Renderer\InvertedRenderer;
 use Spiral\Debug\Renderer\PlainRenderer;
 
-class DumperTest extends TestCase
+class HtmlTest extends TestCase
 {
     public function testOutput()
     {
@@ -146,59 +144,6 @@ class DumperTest extends TestCase
         $result = $d->dump(new class
         {
             protected $visible = '_kk_';
-
-            /** @invisible */
-            protected $invisible = '_ok_';
-        }, Dumper::RETURN);
-
-        $this->assertContains('visible', $result);
-        $this->assertContains('_kk_', $result);
-
-        $this->assertNotContains('invisible', $result);
-        $this->assertNotContains('_ok_', $result);
-    }
-
-    /**
-     * @expectedException \Spiral\Debug\Exceptions\DumperException
-     */
-    public function testSetRenderer()
-    {
-        $d = $this->makeDumper();
-        $d->setRenderer(8, new HtmlRenderer());
-    }
-
-    public function testHtmlRenderer()
-    {
-        $d = $this->makeDumper();
-        $d->setRenderer(Dumper::RETURN, new HtmlRenderer());
-
-        $result = $d->dump(new class
-        {
-            private $value = 123;
-            protected $visible = '_kk_';
-
-            /** @invisible */
-            protected $invisible = '_ok_';
-        }, Dumper::RETURN);
-
-        $this->assertContains('visible', $result);
-        $this->assertContains('_kk_', $result);
-
-        $this->assertNotContains('invisible', $result);
-        $this->assertNotContains('_ok_', $result);
-    }
-
-    public function testInvertedRenderer()
-    {
-        $d = $this->makeDumper();
-        $d->setRenderer(Dumper::RETURN, new InvertedRenderer());
-        $d->setMaxLevel(5);
-
-        $result = $d->dump(new class
-        {
-            private $value = 123;
-            protected $visible = '_kk_';
-            public $data = ['name' => 'value'];
 
             /** @invisible */
             protected $invisible = '_ok_';
