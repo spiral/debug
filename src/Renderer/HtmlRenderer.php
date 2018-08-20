@@ -18,7 +18,7 @@ class HtmlRenderer extends AbstractRenderer
      *
      * @var string
      */
-    protected $body = '<pre style="background-color: white; font-family: monospace;">{dump}</pre>';
+    protected $body = '<pre style="background-color: white; font-family: monospace;">{body}</pre>';
 
     /**
      * Every dumped element is wrapped using this pattern.

@@ -18,7 +18,7 @@ class InvertedRenderer extends HtmlRenderer
      *
      * @var string
      */
-    protected $body = '<pre style="background-color: #232323; font-family: Monospace;">{dump}</pre>';
+    protected $body = '<pre style="background-color: #232323; font-family: Monospace;">{body}</pre>';
 
     /**
      * Set of styles associated with different dumping properties.
