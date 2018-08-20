@@ -110,6 +110,13 @@ class DumperTest extends TestCase
         $this->assertSame(null, $d->dump('abc', Dumper::LOGGER));
     }
 
+    public function testErrorLog()
+    {
+        $d = $this->makeDumper();
+
+        $this->assertSame(null, $d->dump('abc', Dumper::ERROR_LOG));
+    }
+
     /**
      * @expectedException \Spiral\Debug\Exceptions\DumperException
      */
