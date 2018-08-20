@@ -65,13 +65,6 @@ abstract class AbstractRenderer implements RendererInterface
         foreach ($values as $key => $value) {
             $value = (is_array($value) || $value instanceof \Closure) ? '' : $value;
 
-            try {
-                //Object as string
-                $value = is_object($value) ? (string)$value : $value;
-            } catch (\Exception $e) {
-                $value = '';
-            }
-
             $replaces[$prefix . $key . $postfix] = $value;
         }
 
