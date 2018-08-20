@@ -1,9 +1,9 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: wolfy
- * Date: 15.08.2018
- * Time: 16:58
+ * Spiral Framework.
+ *
+ * @license   MIT
+ * @author    Anton Titov (Wolfy-J)
  */
 
 namespace Spiral\Debug;

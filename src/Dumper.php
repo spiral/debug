@@ -376,7 +376,7 @@ class Dumper implements LoggerAwareInterface
         try {
             $r = new \ReflectionFunction($closure);
         } catch (\ReflectionException $e) {
-            return ['TODO'];
+            return ['closure' => 'unable to resolve'];
         }
 
         return [
