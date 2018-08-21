@@ -45,4 +45,12 @@ abstract class AbstractRenderer implements RendererInterface
 
         return $this->apply(str_repeat($this->indent, $level), 'indent');
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function escapeStrings(): bool
+    {
+        return true;
+    }
 }

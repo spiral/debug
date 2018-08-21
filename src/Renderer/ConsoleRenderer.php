@@ -67,6 +67,14 @@ class ConsoleRenderer extends AbstractRenderer
     }
 
     /**
+     * @inheritdoc
+     */
+    public function escapeStrings(): bool
+    {
+        return false;
+    }
+
+    /**
      * Get valid style based on type and context/.
      *
      * @param string $type

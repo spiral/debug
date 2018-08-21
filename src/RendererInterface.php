@@ -38,4 +38,11 @@ interface RendererInterface
      * @return string
      */
     public function apply($element, string $type, string $context = ''): string;
+
+    /**
+     * Must return true if strings has to be escaped by Dumper.
+     *
+     * @return bool
+     */
+    public function escapeStrings(): bool;
 }

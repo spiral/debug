@@ -135,8 +135,8 @@ class Dumper implements LoggerAwareInterface
      */
     private function getRenderer(int $target): RendererInterface
     {
-        if ($target == self::OUTPUT && $this->isCLI()) {
-            if ($this->isColorsSupported()) {
+        if ($target == self::OUTPUT && Environment::isCLI()) {
+            if (Environment::isColorsSupported()) {
                 $target = self::OUTPUT_CLI_COLORS;
             } else {
                 $target = self::OUTPUT_CLI;
@@ -209,7 +209,7 @@ class Dumper implements LoggerAwareInterface
         $element = null;
         switch ($type) {
             case 'string':
-                $element = htmlspecialchars($value);
+                $element = $r->escapeStrings() ? htmlspecialchars($value) : $value;
                 break;
 
             case 'boolean':
@@ -249,7 +249,7 @@ class Dumper implements LoggerAwareInterface
 
         foreach ($array as $key => $value) {
             if (!is_numeric($key)) {
-                if (is_string($key)) {
+                if (is_string($key) && $r->escapeStrings()) {
                     $key = htmlspecialchars($key);
                 }
 
@@ -402,61 +402,5 @@ class Dumper implements LoggerAwareInterface
         }
 
         return 'public';
-    }
-
-    /**
-     * Return true if PHP running in CLI mode.
-     *
-     * @codeCoverageIgnore
-     * @return bool
-     */
-    private function isCLI(): bool
-    {
-        if (!empty(getenv('RR'))) {
-            // Do not treat RoadRunner as CLI.
-            return false;
-        }
-
-        if (php_sapi_name() === 'cli') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns true if the STDOUT supports colorization.
-     *
-     * @codeCoverageIgnore
-     * @link https://github.com/symfony/Console/blob/master/Output/StreamOutput.php#L94
-     * @return bool
-     */
-    private function isColorsSupported(): bool
-    {
-        if ('Hyper' === getenv('TERM_PROGRAM')) {
-            return true;
-        }
-
-        if (\DIRECTORY_SEPARATOR === '\\') {
-            return (
-                    \function_exists('sapi_windows_vt100_support')
-                    && @sapi_windows_vt100_support(STDOUT)
-                )
-                || getenv('ANSICON') !== false
-                || getenv('ConEmuANSI') == 'ON'
-                || getenv('TERM') == 'xterm';
-        }
-        if (\function_exists('stream_isatty')) {
-            return @stream_isatty(STDOUT);
-        }
-
-        if (\function_exists('posix_isatty')) {
-            return @posix_isatty(STDOUT);
-        }
-
-        $stat = @fstat(STDOUT);
-
-        // Check if formatted mode is S_IFCHR
-        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 }
