@@ -17,7 +17,7 @@ abstract class AbstractRenderer implements RendererInterface
      *
      * @var string
      */
-    protected $body = '{body}';
+    protected $body = '%s';
 
     /**
      * Default indent string.
@@ -31,7 +31,7 @@ abstract class AbstractRenderer implements RendererInterface
      */
     public function wrapContent(string $body): string
     {
-        return $this->interpolate($this->body, compact('body'));
+        return sprintf($this->body, $body);
     }
 
     /**
@@ -44,30 +44,5 @@ abstract class AbstractRenderer implements RendererInterface
         }
 
         return $this->apply(str_repeat($this->indent, $level), 'indent');
-    }
-
-    /**
-     * Replaces {placeholders} with given values.
-     *
-     * @param string $string
-     * @param array  $values
-     * @param string $prefix
-     * @param string $postfix
-     * @return string
-     */
-    protected function interpolate(
-        string $string,
-        array $values,
-        string $prefix = '{',
-        string $postfix = '}'
-    ): string {
-        $replaces = [];
-        foreach ($values as $key => $value) {
-            $value = (is_array($value) || $value instanceof \Closure) ? '' : $value;
-
-            $replaces[$prefix . $key . $postfix] = $value;
-        }
-
-        return strtr($string, $replaces);
     }
 }

@@ -20,7 +20,7 @@ class ConsoleRenderer extends AbstractRenderer
      *
      * @var string
      */
-    protected $element = '{style}{element}' . Color::RESET;
+    protected $element = '%s%s' . Color::RESET;
 
     /**
      * Set of styles associated with different dumping properties.
@@ -60,10 +60,7 @@ class ConsoleRenderer extends AbstractRenderer
     public function apply($element, string $type, string $context = ''): string
     {
         if (!empty($style = $this->getStyle($type, $context))) {
-            return $this->interpolate(
-                $this->element,
-                compact('style', 'element')
-            );
+            return sprintf($this->element, $style, $element);
         }
 
         return $element;

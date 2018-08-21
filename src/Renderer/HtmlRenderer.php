@@ -18,14 +18,14 @@ class HtmlRenderer extends AbstractRenderer
      *
      * @var string
      */
-    protected $body = '<pre style="background-color: white; font-family: monospace;">{body}</pre>';
+    protected $body = '<pre style="background-color: white; font-family: monospace;">%s</pre>';
 
     /**
      * Every dumped element is wrapped using this pattern.
      *
      * @var string
      */
-    protected $element = '<span style="{style};">{element}</span>';
+    protected $element = '<span style="%s;">%s</span>';
 
     /**
      * Default indent string.
@@ -78,10 +78,9 @@ class HtmlRenderer extends AbstractRenderer
     public function apply($element, string $type, string $context = ''): string
     {
         if (!empty($style = $this->getStyle($type, $context))) {
-            return $this->interpolate(
-                $this->element,
-                compact('style', 'element')
-            );
+            if (!empty($style = $this->getStyle($type, $context))) {
+                return sprintf($this->element, $style, $element);
+            }
         }
 
         return $element;
