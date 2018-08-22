@@ -210,7 +210,7 @@ class DumperTest extends TestCase
     public function testInvertedRenderer()
     {
         $d = $this->makeDumper();
-        $d->setRenderer(Dumper::RETURN, new InvertedRenderer());
+        $d->setRenderer(Dumper::RETURN, new HtmlRenderer(HtmlRenderer::INVERTED));
         $d->setMaxLevel(5);
 
         $result = $d->dump(new class

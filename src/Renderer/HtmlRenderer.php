@@ -8,38 +8,20 @@
 
 namespace Spiral\Debug\Renderer;
 
+use Spiral\Debug\RendererInterface;
+
 /**
- * Default html style dumper.
+ * HTML renderer with switchable color schemas.
  */
-class HtmlRenderer extends AbstractRenderer
+class HtmlRenderer implements RendererInterface
 {
     /**
-     * Container element used to inject dump into, usually pre elemnt with some styling.
-     *
-     * @var string
+     * Default coloring schema.
      */
-    protected $body = '<pre style="background-color: white; font-family: monospace;">%s</pre>';
-
-    /**
-     * Every dumped element is wrapped using this pattern.
-     *
-     * @var string
-     */
-    protected $element = '<span style="%s;">%s</span>';
-
-    /**
-     * Default indent string.
-     *
-     * @var string
-     */
-    protected $indent = '&middot;    ';
-
-    /**
-     * Set of styles associated with different dumping properties.
-     *
-     * @var array
-     */
-    protected $styles = [
+    const DEFAULT = [
+        'body'     => '<pre style="background-color: white; font-family: monospace;">%s</pre>',
+        'element'  => '<span style="%s;">%s</span>',
+        'indent'   => '&middot;    ',
         'common'   => 'color: black',
         'name'     => 'color: black',
         'dynamic'  => 'color: purple;',
@@ -73,17 +55,99 @@ class HtmlRenderer extends AbstractRenderer
     ];
 
     /**
+     * Inverted coloring schema.
+     */
+    const INVERTED = [
+        'body'     => '<pre style="background-color: #232323; font-family: Monospace;">%s</pre>',
+        'element'  => '<span style="%s;">%s</span>',
+        'indent'   => '&middot;    ',
+        'common'   => 'color: #E6E1DC',
+        'name'     => 'color: #E6E1DC',
+        'dynamic'  => 'color: #7d95c1;',
+        'maxLevel' => 'color: #ff9900',
+        'syntax'   => [
+            'common' => 'color: gray',
+            '['      => 'color: #E6E1DC',
+            ']'      => 'color: #E6E1DC',
+            '('      => 'color: #E6E1DC',
+            ')'      => 'color: #E6E1DC',
+        ],
+        'value'    => [
+            'string'  => 'color: #A5C261',
+            'integer' => 'color: #A5C261',
+            'double'  => 'color: #A5C261',
+            'boolean' => 'color: #C26230; font-weight: bold;',
+        ],
+        'type'     => [
+            'common'   => 'color: #E6E1DC',
+            'object'   => 'color: #E6E1DC',
+            'array'    => 'color: #E6E1DC',
+            'null'     => 'color: #C26230; font-weight: bold',
+            'resource' => 'color: #C26230; font-weight: bold',
+        ],
+        'access'   => [
+            'common'    => 'color: #666',
+            'public'    => 'color: #8dc17d',
+            'private'   => 'color: #c18c7d',
+            'protected' => 'color: #7d95c1',
+        ],
+    ];
+
+    /**
+     * Set of styles associated with different dumping properties.
+     *
+     * @var array
+     */
+    protected $style = self::DEFAULT;
+
+    /**
+     * @param array $style
+     */
+    public function __construct(array $style = self::DEFAULT)
+    {
+        $this->style = $style;
+    }
+
+    /**
      * @inheritdoc
      */
     public function apply($element, string $type, string $context = ''): string
     {
         if (!empty($style = $this->getStyle($type, $context))) {
             if (!empty($style = $this->getStyle($type, $context))) {
-                return sprintf($this->element, $style, $element);
+                return sprintf($this->style['element'], $style, $element);
             }
         }
 
         return $element;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function wrapContent(string $body): string
+    {
+        return sprintf($this->style['body'], $body);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function indent(int $level): string
+    {
+        if ($level == 0) {
+            return '';
+        }
+
+        return $this->apply(str_repeat($this->style['indent'], $level), 'indent');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function escapeStrings(): bool
+    {
+        return true;
     }
 
     /**
@@ -96,18 +160,18 @@ class HtmlRenderer extends AbstractRenderer
      */
     private function getStyle(string $type, string $context): string
     {
-        if (isset($this->styles[$type][$context])) {
-            return $this->styles[$type][$context];
+        if (isset($this->style[$type][$context])) {
+            return $this->style[$type][$context];
         }
 
-        if (isset($this->styles[$type]['common'])) {
-            return $this->styles[$type]['common'];
+        if (isset($this->style[$type]['common'])) {
+            return $this->style[$type]['common'];
         }
 
-        if (isset($this->styles[$type]) && is_string($this->styles[$type])) {
-            return $this->styles[$type];
+        if (isset($this->style[$type]) && is_string($this->style[$type])) {
+            return $this->style[$type];
         }
 
-        return $this->styles['common'];
+        return $this->style['common'];
     }
 }
