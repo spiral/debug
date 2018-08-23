@@ -135,8 +135,8 @@ class Dumper implements LoggerAwareInterface
      */
     private function getRenderer(int $target): RendererInterface
     {
-        if ($target == self::OUTPUT && Environment::isCLI()) {
-            if (Environment::isColorsSupported()) {
+        if ($target == self::OUTPUT && System::isCLI()) {
+            if (System::isColorsSupported(STDOUT)) {
                 $target = self::OUTPUT_CLI_COLORS;
             } else {
                 $target = self::OUTPUT_CLI;
