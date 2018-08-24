@@ -114,7 +114,11 @@ class DumperTest extends TestCase
     {
         $d = $this->makeDumper();
 
+        ini_set("error_log", "errors.log");
         $this->assertSame(null, $d->dump('abc', Dumper::ERROR_LOG));
+
+        $this->assertContains("abc", file_get_contents("errors.log"));
+        unlink("errors.log");
     }
 
     /**
