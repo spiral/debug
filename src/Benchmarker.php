@@ -8,18 +8,15 @@
 
 namespace Spiral\Debug;
 
-class Benchmarker
+use Spiral\Core\Container\SingletonInterface;
+
+class Benchmarker implements BenchmarkerInterface, SingletonInterface
 {
     /** @var Benchmark[] */
     private $records = [];
 
     /**
-     * Create new benchmark record.
-     *
-     * @param string $caller
-     * @param string $event
-     * @param mixed  $context
-     * @return Benchmark
+     * @inheritdoc
      */
     public function record(string $caller, string $event, $context = null): Benchmark
     {
