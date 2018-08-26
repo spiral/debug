@@ -44,15 +44,15 @@ class TraitsTest extends TestCase
         $this->assertSame($logger2, $this->getLogger());
     }
 
-    /**
-     * @expectedException \Spiral\Core\Exceptions\ScopeException
-     */
-    public function testBenchmarkTraitException()
-    {
-        $this->benchmark('test');
-    }
 
     public function testBenchmarkTrait()
+    {
+        $b = $this->benchmark('test');
+        $this->assertSame(self::class, $b->getCaller());
+        $this->assertSame('test', $b->getEvent());
+    }
+
+    public function testBenchmarkTraitInScope()
     {
         $c = new Container();
 
