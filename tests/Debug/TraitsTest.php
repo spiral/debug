@@ -44,7 +44,6 @@ class TraitsTest extends TestCase
         $this->assertSame($logger2, $this->getLogger());
     }
 
-
     public function testBenchmarkTrait()
     {
         $b = $this->benchmark('test');

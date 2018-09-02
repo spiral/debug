@@ -11,10 +11,12 @@ namespace Spiral\Debug\Bootloaders;
 use Spiral\Core\Bootloaders\Bootloader;
 use Spiral\Debug\Benchmarker;
 use Spiral\Debug\BenchmarkerInterface;
+use Spiral\Debug\Dumper;
 
 class DebugBootloader extends Bootloader
 {
-    const BINDINGS = [
-        BenchmarkerInterface::class => Benchmarker::class
+    const SINGLETONS = [
+        BenchmarkerInterface::class => Benchmarker::class,
+        Dumper::class               => Dumper::class,
     ];
 }

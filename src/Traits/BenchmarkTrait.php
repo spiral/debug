@@ -24,6 +24,8 @@ trait BenchmarkTrait
      * @param string $context Record context (if any).
      *
      * @return Benchmark
+     *
+     * @throws \Psr\Container\ContainerExceptionInterface
      */
     private function benchmark(string $event, $context = null): Benchmark
     {
