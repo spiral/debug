@@ -17,7 +17,7 @@ if (!function_exists('dump')) {
      *
      * @return string
      */
-    function dump($value, int $output = Dumper::OUTPUT): string
+    function dump($value, int $output = Dumper::OUTPUT): ?string
     {
         $container = \Spiral\Core\ContainerScope::getContainer();
         if (is_null($container) || !$container->has(Dumper::class)) {
