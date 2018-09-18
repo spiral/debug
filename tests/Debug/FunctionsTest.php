@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Spiral\Core\BootloadManager;
 use Spiral\Core\Container;
 use Spiral\Core\ContainerScope;
-use Spiral\Debug\Bootloaders\DebugBootloader;
+use Spiral\Debug\Bootloader\DebugBootloader;
 
 class FunctionsTest extends TestCase
 {

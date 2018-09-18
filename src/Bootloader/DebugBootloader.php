@@ -6,9 +6,9 @@
  * @author    Anton Titov (Wolfy-J)
  */
 
-namespace Spiral\Debug\Bootloaders;
+namespace Spiral\Debug\Bootloader;
 
-use Spiral\Core\Bootloaders\Bootloader;
+use Spiral\Core\Bootloader\Bootloader;
 use Spiral\Debug\Benchmarker;
 use Spiral\Debug\BenchmarkerInterface;
 use Spiral\Debug\Dumper;

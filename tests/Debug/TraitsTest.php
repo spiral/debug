@@ -13,7 +13,7 @@ use Spiral\Core\BootloadManager;
 use Spiral\Core\Container;
 use Spiral\Core\ContainerScope;
 use Spiral\Debug\Benchmarker;
-use Spiral\Debug\Bootloaders\DebugBootloader;
+use Spiral\Debug\Bootloader\DebugBootloader;
 use Spiral\Debug\Traits\BenchmarkTrait;
 
 class TraitsTest extends TestCase
