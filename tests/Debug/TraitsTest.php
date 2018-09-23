@@ -9,11 +9,10 @@
 namespace Spiral\Debug\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Spiral\Core\BootloadManager;
 use Spiral\Core\Container;
 use Spiral\Core\ContainerScope;
 use Spiral\Debug\Benchmarker;
-use Spiral\Debug\Bootloader\DebugBootloader;
+use Spiral\Debug\BenchmarkerInterface;
 use Spiral\Debug\Traits\BenchmarkTrait;
 
 class TraitsTest extends TestCase
@@ -30,9 +29,7 @@ class TraitsTest extends TestCase
     public function testBenchmarkTraitInScope()
     {
         $c = new Container();
-
-        $b = new BootloadManager($c);
-        $b->bootload([DebugBootloader::class]);
+        $c->bindSingleton(BenchmarkerInterface::class, new Benchmarker());
 
         $b = ContainerScope::runScope($c, function () {
             $b = $this->benchmark('test', ['key' => 'value']);
@@ -44,7 +41,7 @@ class TraitsTest extends TestCase
          * @var Benchmarker             $bench
          * @var \Spiral\Debug\Benchmark $b
          */
-        $bench = $c->get(Benchmarker::class);
+        $bench = $c->get(BenchmarkerInterface::class);
 
         $this->assertSame(self::class, $b->getCaller());
         $this->assertSame('test', $b->getEvent());

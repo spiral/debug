@@ -9,10 +9,9 @@
 namespace Spiral\Debug\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Spiral\Core\BootloadManager;
 use Spiral\Core\Container;
 use Spiral\Core\ContainerScope;
-use Spiral\Debug\Bootloader\DebugBootloader;
+use Spiral\Debug\Dumper;
 
 class FunctionsTest extends TestCase
 {
@@ -24,8 +23,7 @@ class FunctionsTest extends TestCase
     public function testDumpWithScope()
     {
         $container = new Container();
-        $bootloader = new BootloadManager($container);
-        $bootloader->bootload([DebugBootloader::class]);
+        $container->bindSingleton(Dumper::class, new Dumper());
 
         ContainerScope::runScope($container, function () {
             $this->assertContains("100", dump(100, 1));
