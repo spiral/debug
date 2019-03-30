@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Spiral Framework.
  *
@@ -10,10 +10,10 @@ namespace Spiral\Debug;
 
 final class Benchmark
 {
-    /** @var int */
+    /** @var float */
     private $start;
 
-    /** @var integer */
+    /** @var float */
     private $finish;
 
     /** @var string */
@@ -39,17 +39,17 @@ final class Benchmark
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function getStart(): int
+    public function getStart(): float
     {
         return $this->start;
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function getFinish(): ?int
+    public function getFinish(): ?float
     {
         return $this->finish;
     }
@@ -91,9 +91,9 @@ final class Benchmark
     /**
      * Complete benchmark record.
      *
-     * @return int Returns elapsed time.
+     * @return float Returns elapsed time.
      */
-    public function complete(): int
+    public function complete(): float
     {
         $this->finish = microtime(true);
 
@@ -103,9 +103,9 @@ final class Benchmark
     /**
      * Returns elapsed time of given record. Will return null if record was not complete.
      *
-     * @return int|null
+     * @return float|null
      */
-    public function getElapsed(): ?int
+    public function getElapsed(): ?float
     {
         if (!$this->isComplete()) {
             return null;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Spiral Framework.
  *
@@ -10,7 +10,7 @@ namespace Spiral\Debug;
 
 use Spiral\Core\Container\SingletonInterface;
 
-class Benchmarker implements BenchmarkerInterface, SingletonInterface
+final class Benchmarker implements BenchmarkerInterface, SingletonInterface
 {
     /** @var Benchmark[] */
     private $records = [];
