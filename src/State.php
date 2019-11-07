@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Debug;
@@ -17,19 +19,24 @@ use Spiral\Logger\Event\LogEvent;
  */
 final class State
 {
+    /** @var array  */
     private $tags      = [];
+
+    /** @var array  */
     private $extras    = [];
+
+    /** @var array  */
     private $logEvents = [];
 
     /**
      * @param array $tags
      */
-    public function setTags(array $tags)
+    public function setTags(array $tags): void
     {
         foreach ($tags as $key => $value) {
             if (!is_string($value)) {
                 throw new StateException(sprintf(
-                    "Invalid tag value, string expected got %s",
+                    'Invalid tag value, string expected got %s',
                     is_object($value) ? get_class($value) : gettype($value)
                 ));
             }
@@ -42,7 +49,7 @@ final class State
      * @param string $key
      * @param string $value
      */
-    public function setTag(string $key, string $value)
+    public function setTag(string $key, string $value): void
     {
         $this->tags[$key] = $value;
     }
@@ -60,7 +67,7 @@ final class State
     /**
      * @param array $extras
      */
-    public function setExtras(array $extras)
+    public function setExtras(array $extras): void
     {
         $this->extras = $extras;
     }
@@ -69,7 +76,7 @@ final class State
      * @param string $key
      * @param        $value
      */
-    public function setExtra(string $key, $value)
+    public function setExtra(string $key, $value): void
     {
         $this->extras[$key] = $value;
     }
@@ -87,7 +94,7 @@ final class State
     /**
      * @param LogEvent ...$events
      */
-    public function addLogEvent(LogEvent ...$events)
+    public function addLogEvent(LogEvent ...$events): void
     {
         $this->logEvents = array_merge($this->logEvents, $events);
     }
