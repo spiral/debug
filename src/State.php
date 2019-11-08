@@ -17,15 +17,15 @@ use Spiral\Logger\Event\LogEvent;
 /**
  * Describes current process state.
  */
-final class State
+final class State implements StateInterface
 {
-    /** @var array  */
-    private $tags      = [];
+    /** @var array */
+    private $tags = [];
 
-    /** @var array  */
-    private $extras    = [];
+    /** @var array */
+    private $extras = [];
 
-    /** @var array  */
+    /** @var array */
     private $logEvents = [];
 
     /**
@@ -33,6 +33,7 @@ final class State
      */
     public function setTags(array $tags): void
     {
+        $setTags = [];
         foreach ($tags as $key => $value) {
             if (!is_string($value)) {
                 throw new StateException(sprintf(
@@ -41,8 +42,10 @@ final class State
                 ));
             }
 
-            $this->tags[(string)$key] = $value;
+            $setTags[(string)$key] = $value;
         }
+
+        $this->tags = $setTags;
     }
 
     /**
@@ -105,5 +108,15 @@ final class State
     public function getLogEvents(): array
     {
         return $this->logEvents;
+    }
+
+    /**
+     * Reset the state.
+     */
+    public function reset(): void
+    {
+        $this->tags = [];
+        $this->extras = [];
+        $this->logEvents = [];
     }
 }
