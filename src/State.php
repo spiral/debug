@@ -70,7 +70,7 @@ final class State implements StateInterface
     /**
      * @param array $extras
      */
-    public function setExtras(array $extras): void
+    public function setVariables(array $extras): void
     {
         $this->extras = $extras;
     }
@@ -79,7 +79,7 @@ final class State implements StateInterface
      * @param string $key
      * @param        $value
      */
-    public function setExtra(string $key, $value): void
+    public function setVariable(string $key, $value): void
     {
         $this->extras[$key] = $value;
     }
@@ -89,7 +89,7 @@ final class State implements StateInterface
      *
      * @return array
      */
-    public function getExtras(): array
+    public function getVariables(): array
     {
         return $this->extras;
     }

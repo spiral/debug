@@ -36,20 +36,20 @@ interface StateInterface
     /**
      * @param array $extras
      */
-    public function setExtras(array $extras): void;
+    public function setVariables(array $extras): void;
 
     /**
      * @param string $key
      * @param        $value
      */
-    public function setExtra(string $key, $value): void;
+    public function setVariable(string $key, $value): void;
 
     /**
      * Get current state metadata. Arbitrary array form.
      *
      * @return array
      */
-    public function getExtras(): array;
+    public function getVariables(): array;
 
     /**
      * @param LogEvent ...$events

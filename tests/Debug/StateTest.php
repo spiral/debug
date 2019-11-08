@@ -62,35 +62,35 @@ class StateTest extends TestCase
     public function testExtras(): void
     {
         $state = new State();
-        $this->assertEquals([], $state->getExtras());
+        $this->assertEquals([], $state->getVariables());
 
-        $state->setExtra('key', 'value');
+        $state->setVariable('key', 'value');
         $this->assertEquals([
             'key' => 'value'
-        ], $state->getExtras());
+        ], $state->getVariables());
 
-        $state->setExtra('key2', 'value');
+        $state->setVariable('key2', 'value');
         $this->assertEquals([
             'key'  => 'value',
             'key2' => 'value'
-        ], $state->getExtras());
+        ], $state->getVariables());
 
 
-        $state->setExtra('key', 'value2');
+        $state->setVariable('key', 'value2');
         $this->assertEquals([
             'key'  => 'value2',
             'key2' => 'value'
-        ], $state->getExtras());
+        ], $state->getVariables());
 
-        $state->setExtras(['a' => 'b']);
+        $state->setVariables(['a' => 'b']);
 
         $this->assertEquals([
             'a' => 'b',
-        ], $state->getExtras());
+        ], $state->getVariables());
 
         $state->reset();
 
-        $this->assertEquals([], $state->getExtras());
+        $this->assertEquals([], $state->getVariables());
     }
 
     public function testLogEvents(): void
