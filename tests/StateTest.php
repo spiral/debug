@@ -15,34 +15,34 @@ class StateTest extends TestCase
     public function testTags(): void
     {
         $state = new State();
-        $this->assertEquals([], $state->getTags());
+        self::assertSame([], $state->getTags());
 
         $state->setTag('key', 'value');
-        $this->assertEquals([
-            'key' => 'value'
+        self::assertSame([
+            'key' => 'value',
         ], $state->getTags());
 
         $state->setTag('key2', 'value');
-        $this->assertEquals([
+        self::assertSame([
             'key'  => 'value',
-            'key2' => 'value'
+            'key2' => 'value',
         ], $state->getTags());
 
         $state->setTag('key', 'value2');
-        $this->assertEquals([
+        self::assertSame([
             'key'  => 'value2',
-            'key2' => 'value'
+            'key2' => 'value',
         ], $state->getTags());
 
         $state->setTags(['a' => 'b']);
 
-        $this->assertEquals([
+        self::assertSame([
             'a' => 'b',
         ], $state->getTags());
 
         $state->reset();
 
-        $this->assertEquals([], $state->getTags());
+        self::assertSame([], $state->getTags());
     }
 
     public function testTagsException(): void
@@ -55,68 +55,68 @@ class StateTest extends TestCase
     public function testExtras(): void
     {
         $state = new State();
-        $this->assertEquals([], $state->getVariables());
+        self::assertSame([], $state->getVariables());
 
         $state->setVariable('key', 'value');
-        $this->assertEquals([
-            'key' => 'value'
+        self::assertSame([
+            'key' => 'value',
         ], $state->getVariables());
 
         $state->setVariable('key2', 'value');
-        $this->assertEquals([
+        self::assertSame([
             'key'  => 'value',
-            'key2' => 'value'
+            'key2' => 'value',
         ], $state->getVariables());
 
 
         $state->setVariable('key', 'value2');
-        $this->assertEquals([
+        self::assertSame([
             'key'  => 'value2',
-            'key2' => 'value'
+            'key2' => 'value',
         ], $state->getVariables());
 
         $state->setVariables(['a' => 'b']);
 
-        $this->assertEquals([
+        self::assertSame([
             'a' => 'b',
         ], $state->getVariables());
 
         $state->reset();
 
-        $this->assertEquals([], $state->getVariables());
+        self::assertSame([], $state->getVariables());
     }
 
     public function testLogEvents(): void
     {
         $state = new State();
-        $this->assertEquals([], $state->getLogEvents());
+        self::assertSame([], $state->getLogEvents());
 
         $state->addLogEvent(new LogEvent(
             new \DateTime(),
             'default',
             LogLevel::ERROR,
-            'message'
+            'message',
         ));
-        $this->assertCount(1, $state->getLogEvents());
+        self::assertCount(1, $state->getLogEvents());
 
         $state->addLogEvent(
             new LogEvent(
                 new \DateTime(),
                 'default1',
                 LogLevel::ERROR,
-                'message'
+                'message',
             ),
             new LogEvent(
                 new \DateTime(),
                 'default1',
                 LogLevel::ERROR,
-                'message'
-            )
+                'message',
+            ),
         );
 
-        $this->assertCount(3, $state->getLogEvents());
+        self::assertCount(3, $state->getLogEvents());
 
         $state->reset();
-        $this->assertEquals([], $state->getLogEvents());
+        self::assertSame([], $state->getLogEvents());
     }
 }
